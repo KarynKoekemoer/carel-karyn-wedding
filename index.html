@@ -160,29 +160,34 @@ async function loadAvailability() {
   }
 
   console.log("Wedding accommodation availability:", data);
-  const rooms = document.querySelectorAll("#accommodation-list > div");
-
-rooms.forEach(card => {
-  const roomName = card.querySelector("h3")?.textContent;
+  document.querySelectorAll("#accommodation-list > div").forEach(card => {
+  const roomId = Number(card.dataset.roomId);
   const availabilityText = card.querySelector("p:last-child");
 
-  const room = accommodationData?.find(r => r.name === roomName);
+  if (!roomId || !availabilityText) return;
 
-  if (!room || !availabilityText) return;
-
-  const dates = data.filter(a => a.room_id === room.id);
+  const dates = data.filter(a => Number(a.room_id) === roomId);
 
   const friday = dates.find(a => a.stay_date === "2027-03-05");
   const saturday = dates.find(a => a.stay_date === "2027-03-06");
 
+  const status = day =>
+    !day ? "Not available" :
+    day.is_available ? "Available" : "Fully booked";
+
   availabilityText.textContent =
-    `Friday: ${friday?.is_available ? "Available" : "Fully booked"} | ` +
-    `Saturday: ${saturday?.is_available ? "Available" : "Fully booked"}`;
+    `Friday 5 March: ${status(friday)} | Saturday 6 March: ${status(saturday)}`;
 });
+
+
 }
 
-loadAvailability();
-  loadAccommodation();
+async function initialisePage() {
+  await loadAccommodation();
+  await loadAvailability();
+}
+
+initialisePage();
 </script>
 </body>
 </html>
