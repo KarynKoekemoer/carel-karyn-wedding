@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Carel & Karyn | Wedding Admin</title>
+  <style>
+    body {
+      margin: 0;
+      background: #f7f3ed;
+      color: #39352f;
+      font-family: Georgia, serif;
+    }
+    header {
+      background: #e9dfd2;
+      text-align: center;
+      padding: 35px 20px;
+    }
+    h1 { margin-bottom: 8px; }
+    main {
+      max-width: 1100px;
+      margin: 35px auto;
+      padding: 0 18px;
+    }
+    .card {
+      background: white;
+      padding: 28px;
+      border-radius: 12px;
+      box-shadow: 0 3px 15px #00000010;
+      margin-bottom: 22px;
+    }
+    input, button {
+      box-sizing: border-box;
+      width: 100%;
+      padding: 13px;
+      margin: 9px 0;
+      border-radius: 6px;
+      font-size: 15px;
+    }
+    input { border: 1px solid #c9c2b9; }
+    button {
+      background: #68594c;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:disabled { opacity: .6; cursor: wait; }
+    .hidden { display: none; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td {
+      text-align: left;
+      padding: 12px;
+      border-bottom: 1px solid #e8e1d9;
+      white-space: nowrap;
+    }
+    th { background: #f4eee7; }
+    #message { margin-top: 12px; }
+    .logout { max-width: 160px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Carel & Karyn</h1>
+    <p>Wedding Accommodation | Private Admin</p>
+  </header>
+
+  <main>
+    <section id="login" class="card">
+      <h2>Admin Login</h2>
+      <form id="login-form">
+        <label for="email">Email address</label>
+        <input id="email" type="email" required autocomplete="username">
+
+        <label for="password">Password</label>
+        <input id="password" type="password" required autocomplete="current-password">
+
+        <button id="login-button" type="submit">Sign In</button>
+      </form>
+      <p id="message" role="status"></p>
+    </section>
+
+    <section id="dashboard" class="card hidden">
+      <h2>Accommodation Bookings</h2>
+      <p id="account"></p>
+      <button class="logout" id="logout" type="button">Sign Out</button>
+      <p id="booking-status" role="status"></p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Accommodation</th>
+              <th>Date</th>
+              <th>Guest</th>
+              <th>Guests</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="bookings"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // Copy these two values from your existing index.html.
+  const SUPABASE_URL = "https://rqyynavczkexkztogcix.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_Eew9XHMBSp_10Gkvuvy1DQ_1GQXOfX5";
+
+    const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const login = document.getElementById("login");
+    const dashboard = document.getElementById("dashboard");
+    const message = document.getElementById("message");
+    const bookingStatus = document.getElementById("booking-status");
+    const bookings = document.getElementById("bookings");
+
+    async function showDashboard() {
+      const { data: { user }, error: userError } = await db.auth.getUser();
+
+      if (userError || !user) {
+        login.classList.remove("hidden");
+        dashboard.classList.add("hidden");
+        return;
+      }
+
+      // Server-side admin verification.
+      const { data: isAdmin, error: adminError } =
+        await db.rpc("is_wedding_admin");
+
+      if (adminError || isAdmin !== true) {
+        await db.auth.signOut();
+        login.classList.remove("hidden");
+        dashboard.classList.add("hidden");
+        message.textContent = "This account does not have admin access.";
+        return;
+      }
+
+      login.classList.add("hidden");
+      dashboard.classList.remove("hidden");
+      document.getElementById("account").textContent =
+        "Signed in as " + user.email;
+
+      await loadBookings();
+    }
+
+    async function loadBookings() {
+      bookingStatus.textContent = "Loading bookings...";
+      bookings.replaceChildren();
+
+      const { data, error } = await db
+        .from("reservations")
+        .select("id,stay_date,guest_name,guest_count,guest_email,guest_phone,status,rooms(name)")
+        .order("stay_date", { ascending: true });
+
+      if (error) {
+        bookingStatus.textContent = "Could not load bookings: " + error.message;
+        return;
+      }
+
+      bookingStatus.textContent = (data || []).length + " booking nights found.";
+
+      for (const booking of data || []) {
+        const row = document.createElement("tr");
+        const values = [
+          booking.rooms?.name || "",
+          booking.stay_date,
+          booking.guest_name,
+          booking.guest_count,
+          booking.guest_email,
+          booking.guest_phone,
+          booking.status
+        ];
+
+        for (const value of values) {
+          const cell = document.createElement("td");
+          cell.textContent = value ?? "";
+          row.appendChild(cell);
+        }
+
+        bookings.appendChild(row);
+      }
+    }
+
+    document.getElementById("login-form").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const button = document.getElementById("login-button");
+      button.disabled = true;
+      message.textContent = "Signing in...";
+
+      const { error } = await db.auth.signInWithPassword({
+        email: document.getElementById("email").value.trim(),
+        password: document.getElementById("password").value
+      });
+
+      document.getElementById("password").value = "";
+      button.disabled = false;
+
+      if (error) {
+        message.textContent = error.message;
+        return;
+      }
+
+      message.textContent = "";
+      await showDashboard();
+    });
+
+    document.getElementById("logout").addEventListener("click", async () => {
+      await db.auth.signOut();
+      bookings.replaceChildren();
+      dashboard.classList.add("hidden");
+      login.classList.remove("hidden");
+      message.textContent = "Signed out.";
+    });
+
+    showDashboard();
+  </script>
+</body>
+</html>
