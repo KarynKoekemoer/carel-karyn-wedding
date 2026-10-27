@@ -73,6 +73,13 @@
       <p>Online accommodation bookings are coming soon.</p>
       <button disabled>Bookings opening soon</button>
     </div>
+    <section class="card">
+  <h2>Available Accommodation</h2>
+  <p>Select your accommodation for our wedding weekend.</p>
+  <div id="accommodation-list">
+    Loading accommodation...
+  </div>
+</section>
   </main>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -84,6 +91,56 @@
     SUPABASE_URL,
     SUPABASE_KEY
   );
+  async function loadAccommodation() {
+  const container = document.getElementById("accommodation-list");
+
+  const { data, error } = await weddingDB
+    .from("rooms")
+    .select("name, location, capacity, price_per_night, pricing_type")
+    .eq("available_to_public", true)
+    .order("name");
+
+  if (error) {
+    container.textContent = "Unable to load accommodation.";
+    console.error(error);
+    return;
+  }
+
+  container.replaceChildren();
+
+  if (!data || data.length === 0) {
+    container.textContent = "No accommodation is currently available.";
+    return;
+  }
+
+  data.forEach(room => {
+    const card = document.createElement("div");
+    card.style.padding = "18px";
+    card.style.margin = "12px 0";
+    card.style.background = "#f8f5ef";
+    card.style.borderRadius = "12px";
+
+    const title = document.createElement("h3");
+    title.textContent = room.name;
+
+    const details = document.createElement("p");
+    details.textContent =
+      `${room.location} | Sleeps ${room.capacity}`;
+
+    const price = document.createElement("p");
+    price.textContent =
+      `R${Number(room.price_per_night).toLocaleString("en-ZA")} ${
+        room.pricing_type === "per_person"
+          ? "per person per night"
+          : "per unit per night"
+      }`;
+
+    card.append(title, details, price);
+    container.appendChild(card);
+  });
+}
+
+loadAccommodation();
 </script>
 </body>
 </html>
