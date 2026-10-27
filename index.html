@@ -140,7 +140,20 @@
   });
 }
 
-loadAccommodation();
+async function loadAvailability() {
+  const { data, error } = await weddingDB
+    .rpc("get_wedding_availability");
+
+  if (error) {
+    console.error("Availability error:", error);
+    return;
+  }
+
+  console.log("Wedding accommodation availability:", data);
+}
+
+loadAvailability();
+  loadAccommodation();
 </script>
 </body>
 </html>
