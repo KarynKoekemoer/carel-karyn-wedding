@@ -134,8 +134,17 @@
           ? "per person per night"
           : "per unit per night"
       }`;
+const availability = document.createElement("p");
 
-    card.append(title, details, price);
+availability.textContent = "Checking availability...";
+
+availability.style.fontWeight = "bold";
+availability.style.marginTop = "15px";
+
+
+
+room.availabilityElement = availability;
+    card.append(title, details, price, availability);
     container.appendChild(card);
   });
 }
