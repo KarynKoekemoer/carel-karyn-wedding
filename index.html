@@ -42,6 +42,50 @@
       font-size: 15px;
       cursor: pointer;
     }
+    #booking-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 480px;
+  margin: 25px auto;
+  text-align: left;
+}
+
+#booking-form > label {
+  display: block;
+  font-weight: 600;
+}
+
+#booking-form select,
+#booking-form input:not([type="checkbox"]) {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #d6d0c7;
+  border-radius: 8px;
+  font-size: 16px;
+  background: white;
+  color: #403a33;
+}
+
+#booking-form input[type="checkbox"] {
+  width: auto;
+  margin-right: 8px;
+  accent-color: #716759;
+}
+
+#booking-form button {
+  width: 100%;
+  margin-top: 10px;
+}
+
+#booking-total {
+  font-size: 20px;
+  font-weight: bold;
+  text-align: center;
+}
+
   </style>
 </head>
 <body>
