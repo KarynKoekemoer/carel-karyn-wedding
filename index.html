@@ -69,10 +69,46 @@
     </div>
 
     <div class="card">
-      <h2>Book Your Stay</h2>
-      <p>Online accommodation bookings are coming soon.</p>
-      <button disabled>Bookings opening soon</button>
-    </div>
+  <h2>Book Your Stay</h2>
+  <p>Choose your accommodation and dates for Carel & Karyn's wedding weekend.</p>
+
+  <form id="booking-form">
+    <label for="booking-room">Accommodation</label>
+    <select id="booking-room" required>
+      <option value="">Select accommodation</option>
+    </select>
+
+    <p>Which nights will you stay?</p>
+    <label>
+      <input type="checkbox" id="book-friday">
+      Friday, 5 March 2027
+    </label>
+
+    <label>
+      <input type="checkbox" id="book-saturday">
+      Saturday, 6 March 2027
+    </label>
+
+    <label for="guest-name">Your full name</label>
+    <input id="guest-name" type="text" required>
+
+    <label for="guest-email">Email address</label>
+    <input id="guest-email" type="email" required>
+
+    <label for="guest-phone">Contact number</label>
+    <input id="guest-phone" type="tel" required>
+
+    <label for="guest-count">Number of guests</label>
+    <input id="guest-count" type="number" min="1" required>
+
+    <p id="booking-total">Total: R0</p>
+    <p id="booking-message"></p>
+
+    <button type="submit" disabled>
+      Bookings opening soon
+    </button>
+  </form>
+</div>
     <section class="card">
   <h2>Available Accommodation</h2>
   <p>Select your accommodation for our wedding weekend.</p>
