@@ -414,7 +414,29 @@ async function loadBookingPrices() {
   accommodationPrices = data || [];
   calculateBookingTotal();
 }
+let bookedWeddingNights = [];
 
+async function loadBookedWeddingNights() {
+  const { data, error } = await weddingDB.rpc(
+    "get_booked_wedding_nights"
+  );
+
+  if (error) {
+    console.error("Availability loading error:", error);
+    return false;
+  }
+
+  bookedWeddingNights = data || [];
+  return true;
+}
+
+function isWeddingNightBooked(roomId, date) {
+  return bookedWeddingNights.some(
+    booking =>
+      Number(booking.room_id) === Number(roomId) &&
+      booking.stay_date === date
+  );
+}
 function calculateBookingTotal() {
   const roomId = Number(document.getElementById("booking-room").value);
   const guestCount = Number(document.getElementById("guest-count").value);
@@ -483,7 +505,23 @@ document.getElementById("booking-form").addEventListener("submit", async functio
     message.textContent = "Please complete all fields and select your dates.";
     return;
   }
+const availabilityLoaded = await loadBookedWeddingNights();
 
+if (!availabilityLoaded) {
+  message.textContent =
+    "Could not check availability. Please try again.";
+  return;
+}
+
+const unavailableDates = dates.filter(date =>
+  isWeddingNightBooked(roomId, date)
+);
+
+if (unavailableDates.length > 0) {
+  message.textContent =
+    "Sorry, this accommodation is already booked for one or more selected nights. Please choose another date or accommodation.";
+  return;
+}
   button.disabled = true;
   button.textContent = "Confirming...";
   message.textContent = "Processing your booking...";
@@ -514,6 +552,7 @@ document.getElementById("booking-form").addEventListener("submit", async functio
   }
 });
   loadBookingPrices();
+  loadBookedWeddingNights();
 initialisePage();
 </script>
 </body>
