@@ -96,7 +96,7 @@
 
   const { data, error } = await weddingDB
     .from("rooms")
-    .select("name, location, capacity, price_per_night, pricing_type")
+    .select("id, name, location, capacity, price_per_night, pricing_type")
     .eq("available_to_public", true)
     .order("name");
 
@@ -144,6 +144,7 @@ availability.style.marginTop = "15px";
 
 
 room.availabilityElement = availability;
+    card.dataset.roomId = room.id;
     card.append(title, details, price, availability);
     container.appendChild(card);
   });
@@ -159,6 +160,25 @@ async function loadAvailability() {
   }
 
   console.log("Wedding accommodation availability:", data);
+  const rooms = document.querySelectorAll("#accommodation-list > div");
+
+rooms.forEach(card => {
+  const roomName = card.querySelector("h3")?.textContent;
+  const availabilityText = card.querySelector("p:last-child");
+
+  const room = accommodationData?.find(r => r.name === roomName);
+
+  if (!room || !availabilityText) return;
+
+  const dates = data.filter(a => a.room_id === room.id);
+
+  const friday = dates.find(a => a.stay_date === "2027-03-05");
+  const saturday = dates.find(a => a.stay_date === "2027-03-06");
+
+  availabilityText.textContent =
+    `Friday: ${friday?.is_available ? "Available" : "Fully booked"} | ` +
+    `Saturday: ${saturday?.is_available ? "Available" : "Fully booked"}`;
+});
 }
 
 loadAvailability();
