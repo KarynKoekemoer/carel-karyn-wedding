@@ -279,7 +279,65 @@ async function initialisePage() {
   await loadAccommodation();
   await loadAvailability();
 }
+let accommodationPrices = [];
 
+async function loadBookingPrices() {
+  const { data, error } = await weddingDB
+    .from("rooms")
+    .select("id, capacity, price_per_night, pricing_type")
+    .eq("available_to_public", true);
+
+  if (error) {
+    console.error("Price loading error:", error);
+    return;
+  }
+
+  accommodationPrices = data || [];
+  calculateBookingTotal();
+}
+
+function calculateBookingTotal() {
+  const roomId = Number(document.getElementById("booking-room").value);
+  const guestCount = Number(document.getElementById("guest-count").value);
+  const friday = document.getElementById("book-friday").checked;
+  const saturday = document.getElementById("book-saturday").checked;
+
+  const room = accommodationPrices.find(r => Number(r.id) === roomId);
+  const nights = Number(friday) + Number(saturday);
+  const totalElement = document.getElementById("booking-total");
+
+  if (!room || !nights || !guestCount || guestCount < 1) {
+    totalElement.textContent = "Total: R0";
+    return;
+  }
+
+  if (guestCount > room.capacity) {
+    totalElement.textContent =
+      Maximum ${room.capacity} guests allowed for this accommodation.;
+    return;
+  }
+
+  const total = room.pricing_type === "per_person"
+    ? Number(room.price_per_night) * guestCount * nights
+    : Number(room.price_per_night) * nights;
+
+  totalElement.textContent =
+    Total: R${total.toLocaleString("en-ZA")};
+}
+
+[
+  "booking-room",
+  "book-friday",
+  "book-saturday",
+  "guest-count"
+].forEach(id => {
+  document.getElementById(id).addEventListener(
+    "change",
+    calculateBookingTotal
+  );
+});
+
+loadBookingPrices();
 initialisePage();
 </script>
 </body>
