@@ -318,18 +318,41 @@ const heading = document.createElement("p");
 heading.textContent = "Current accommodation arrangements:";
 bookingsList.appendChild(heading);
 
+const groupedBookings = {};
+
 (data || []).forEach((booking) => {
-  const item = document.createElement("p");
+  if (!groupedBookings[booking.accommodation]) {
+    groupedBookings[booking.accommodation] = {};
+  }
 
-  const date =
-    booking.stay_date === "2027-03-05"
-      ? "Friday, 5 March"
-      : "Saturday, 6 March";
+  groupedBookings[booking.accommodation][booking.stay_date] =
+    booking.booked_by;
+});
 
-item.textContent =
-  booking.accommodation + " | " + date + " | " + booking.booked_by;
+Object.keys(groupedBookings).sort().forEach((roomName) => {
+  const roomCard = document.createElement("div");
+  roomCard.className = "card";
 
-  bookingsList.appendChild(item);
+  const roomTitle = document.createElement("h3");
+  roomTitle.textContent = roomName;
+  roomCard.appendChild(roomTitle);
+
+  const dates = [
+    ["2027-03-05", "Friday, 5 March"],
+    ["2027-03-06", "Saturday, 6 March"]
+  ];
+
+  dates.forEach(([date, label]) => {
+    const row = document.createElement("p");
+    const guest = groupedBookings[roomName][date];
+
+    row.textContent =
+      label + ": " + (guest || "Available");
+
+    roomCard.appendChild(row);
+  });
+
+  bookingsList.appendChild(roomCard);
 });
 }
 let accommodationPrices = [];
