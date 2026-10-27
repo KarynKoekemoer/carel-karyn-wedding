@@ -111,7 +111,26 @@
       <h2>Saturday, 6 March 2027</h2>
       <p>Accommodation for our wedding night.</p>
     </div>
+<div class="card">
+  <h2>Wedding Accommodation Arrangements 🏡</h2>
 
+  <p>
+    We've made some initial accommodation arrangements
+    for our family and friends.
+    These are only suggestions, not fixed arrangements!
+  </p>
+
+  <p>
+    You're welcome to swap accommodation with other guests,
+    as long as both parties agree.
+  </p>
+
+  <h3>Who's Staying Where?</h3>
+
+  <div id="public-bookings-list">
+    Accommodation arrangements will appear here.
+  </div>
+</div>
     <div class="card">
   <h2>Book Your Stay</h2>
   <p>Choose your accommodation and dates for Carel & Karyn's wedding weekend.</p>
@@ -289,7 +308,29 @@ async function initialisePage() {
     return;
   }
 
-  console.log("Wedding accommodation bookings:", data);
+ const bookingsList = document.getElementById("public-bookings-list");
+
+if (!bookingsList) return;
+
+bookingsList.replaceChildren();
+
+const heading = document.createElement("p");
+heading.textContent = "Current accommodation arrangements:";
+bookingsList.appendChild(heading);
+
+(data || []).forEach((booking) => {
+  const item = document.createElement("p");
+
+  const date =
+    booking.stay_date === "2027-03-05"
+      ? "Friday, 5 March"
+      : "Saturday, 6 March";
+
+item.textContent =
+  booking.accommodation + " | " + date + " | " + booking.booked_by;
+
+  bookingsList.appendChild(item);
+});
 }
 let accommodationPrices = [];
 
