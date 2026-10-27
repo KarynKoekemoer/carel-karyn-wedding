@@ -183,7 +183,7 @@
     <p id="booking-total">Total: R0</p>
     <p id="booking-message"></p>
 
-<button type="submit" id="confirm-booking" disabled>
+<button type="submit" id="confirm-booking">
   Confirm Booking
 </button>
   </form>
@@ -444,6 +444,7 @@ totalElement.textContent =
   "Total: R" + total.toLocaleString("en-ZA");
 }
 
+  
 [
   "booking-room",
   "book-friday",
@@ -455,7 +456,64 @@ totalElement.textContent =
     calculateBookingTotal
   );
 });
-loadBookingPrices();
+document.getElementById("booking-form").addEventListener("submit", async function (event) {
+  event.preventDefault();
+
+  const button = document.getElementById("confirm-booking");
+  const message = document.getElementById("booking-message");
+
+  const roomId = Number(document.getElementById("booking-room").value);
+  const guestCount = Number(document.getElementById("guest-count").value);
+  const guestName = document.getElementById("guest-name").value.trim();
+  const guestEmail = document.getElementById("guest-email").value.trim();
+  const guestPhone = document.getElementById("guest-phone").value.trim();
+
+  const dates = [];
+
+  if (document.getElementById("book-friday").checked) {
+    dates.push("2027-03-05");
+  }
+
+  if (document.getElementById("book-saturday").checked) {
+    dates.push("2027-03-06");
+  }
+
+  if (!roomId || dates.length === 0 || !guestName ||
+      !guestEmail || !guestPhone || guestCount < 1) {
+    message.textContent = "Please complete all fields and select your dates.";
+    return;
+  }
+
+  button.disabled = true;
+  button.textContent = "Confirming...";
+  message.textContent = "Processing your booking...";
+
+  try {
+    const { data, error } = await weddingDB.rpc("book_wedding_stay", {
+      p_room_id: roomId,
+      p_dates: dates,
+      p_guest_name: guestName,
+      p_guest_email: guestEmail,
+      p_guest_phone: guestPhone,
+      p_guest_count: guestCount
+    });
+
+    if (error) throw error;
+
+    message.textContent = "Your accommodation booking has been confirmed!";
+    document.getElementById("booking-form").reset();
+    calculateBookingTotal();
+
+  } catch (error) {
+    console.error("Booking error:", error);
+    message.textContent =
+      "Booking could not be completed. The accommodation may already be booked. Please try again.";
+  } finally {
+    button.disabled = false;
+    button.textContent = "Confirm Booking";
+  }
+});
+  loadBookingPrices();
 initialisePage();
 </script>
 </body>
