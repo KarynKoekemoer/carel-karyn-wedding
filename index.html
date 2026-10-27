@@ -311,11 +311,11 @@ function calculateBookingTotal() {
     return;
   }
 
-  if (guestCount > room.capacity) {
-    totalElement.textContent =
-      Maximum ${room.capacity} guests allowed for this accommodation.;
-    return;
-  }
+if (guestCount > room.capacity) {
+  totalElement.textContent =
+    `Maximum ${room.capacity} guests allowed for this accommodation.`;
+  return;
+}
 
   const total = room.pricing_type === "per_person"
     ? Number(room.price_per_night) * guestCount * nights
