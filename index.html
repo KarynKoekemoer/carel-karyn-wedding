@@ -115,15 +115,16 @@
       Reserve your accommodation for our wedding weekend.
     </p>
 
-    <div class="card">
+    <div id="wedding-dates-section">
       <h2>Friday, 5 March 2027</h2>
       <p>Accommodation for the night before our wedding.</p>
     </div>
 
     <div class="card">
       <h2>Saturday, 6 March 2027</h2>
-      <p>Accommodation for our wedding night.</p>
-    </div>
+    <p>Accommodation for our wedding night.</p>
+</div>
+</div>
 <div class="card" id="arrangements-section">
   <h2>Wedding Accommodation Arrangements 🏡</h2>
 
@@ -329,8 +330,15 @@ function showTab(tab) {
   const selectedSection = document.getElementById(sections[tab]);
 
   if (selectedSection) {
-    selectedSection.style.display = "block";
-  }
+  selectedSection.style.display = "block";
+}
+
+const weddingDates = document.getElementById("wedding-dates-section");
+
+if (weddingDates) {
+  weddingDates.style.display =
+    tab === "arrangements" ? "block" : "none";
+}
 }
   async function loadPublicBookings() {
   const { data, error } = await weddingDB
