@@ -127,6 +127,18 @@
     SUPABASE_URL,
     SUPABASE_KEY
   );
+  function populateAccommodationOptions(rooms) {
+  const select = document.getElementById("booking-room");
+
+  select.innerHTML = '<option value="">Select accommodation</option>';
+
+  rooms.forEach(room => {
+    const option = document.createElement("option");
+    option.value = room.id;
+    option.textContent = `${room.name} — Sleeps ${room.capacity}`;
+    select.appendChild(option);
+  });
+}
   async function loadAccommodation() {
   const container = document.getElementById("accommodation-list");
 
@@ -143,6 +155,7 @@
   }
 
   container.replaceChildren();
+    populateAccommodationOptions(data);
 
   if (!data || data.length === 0) {
     container.textContent = "No accommodation is currently available.";
