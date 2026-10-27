@@ -274,10 +274,22 @@ async function loadAvailability() {
 
 
 }
-
 async function initialisePage() {
   await loadAccommodation();
   await loadAvailability();
+  await loadPublicBookings();
+}
+
+  async function loadPublicBookings() {
+  const { data, error } = await weddingDB
+    .rpc("public_wedding_bookings");
+
+  if (error) {
+    console.error("Booking list error:", error);
+    return;
+  }
+
+  console.log("Wedding accommodation bookings:", data);
 }
 let accommodationPrices = [];
 
