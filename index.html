@@ -96,6 +96,19 @@
   </header>
 
   <main>
+    <div class="wedding-tabs">
+  <button type="button" onclick="showTab('arrangements')">
+    Wedding Accommodation Arrangements
+  </button>
+
+  <button type="button" onclick="showTab('booking')">
+    Booking
+  </button>
+
+  <button type="button" onclick="showTab('available')">
+    Available Accommodation
+  </button>
+</div>
     <h2>Wedding Accommodation</h2>
     <p>
       We're so excited to celebrate with you!
@@ -111,7 +124,7 @@
       <h2>Saturday, 6 March 2027</h2>
       <p>Accommodation for our wedding night.</p>
     </div>
-<div class="card">
+<div class="card" id="arrangements-section">
   <h2>Wedding Accommodation Arrangements 🏡</h2>
 
   <p>
@@ -131,7 +144,7 @@
     Accommodation arrangements will appear here.
   </div>
 </div>
-    <div class="card">
+    <div class="card" id="booking-section">
   <h2>Book Your Stay</h2>
   <p>Choose your accommodation and dates for Carel & Karyn's wedding weekend.</p>
 
@@ -172,7 +185,7 @@
 </button>
   </form>
 </div>
-    <section class="card">
+    <section class="card" id="available-section">
   <h2>Available Accommodation</h2>
   <p>Select your accommodation for our wedding weekend.</p>
   <div id="accommodation-list">
@@ -297,8 +310,28 @@ async function initialisePage() {
   await loadAccommodation();
   await loadAvailability();
   await loadPublicBookings();
+  showTab("arrangements");
 }
+function showTab(tab) {
+  const sections = {
+    arrangements: "arrangements-section",
+    booking: "booking-section",
+    available: "available-section"
+  };
 
+  Object.values(sections).forEach(id => {
+    const section = document.getElementById(id);
+    if (section) {
+      section.style.display = "none";
+    }
+  });
+
+  const selectedSection = document.getElementById(sections[tab]);
+
+  if (selectedSection) {
+    selectedSection.style.display = "block";
+  }
+}
   async function loadPublicBookings() {
   const { data, error } = await weddingDB
     .rpc("public_wedding_bookings");
