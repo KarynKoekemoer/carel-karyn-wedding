@@ -318,11 +318,11 @@ if (guestCount > room.capacity) {
 }
 
   const total = room.pricing_type === "per_person"
-    ? Number(room.price_per_night) * guestCount * nights
-    : Number(room.price_per_night) * nights;
+  ? Number(room.price_per_night) * guestCount * nights
+  : Number(room.price_per_night) * nights;
 
-  totalElement.textContent =
-    Total: R${total.toLocaleString("en-ZA")};
+totalElement.textContent =
+  "Total: R" + total.toLocaleString("en-ZA");
 }
 
 [
@@ -336,7 +336,6 @@ if (guestCount > room.capacity) {
     calculateBookingTotal
   );
 });
-
 loadBookingPrices();
 initialisePage();
 </script>
