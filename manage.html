@@ -153,29 +153,83 @@
     SUPABASE_KEY
   );
 </script>
+<script>
+async function showInstructions() {
+  const message = document.getElementById("message");
+  const referenceInput = document.getElementById("reference");
 
-  <script>
-    function showInstructions() {
-      const reference =
-        document.getElementById("reference")
-          .value.trim().toUpperCase();
+  const reference = referenceInput
+    ? referenceInput.value.trim().toUpperCase()
+    : "";
 
-      const message =
-        document.getElementById("message");
+  const token = new URLSearchParams(
+    window.location.search
+  ).get("token");
 
-      if (!/^CK-[0-9]{6}$/.test(reference)) {
-        message.textContent =
-          "Please enter a valid CK booking reference.";
-        return;
-      }
+  if (!token) {
+    message.textContent =
+      "Please open your private booking link. " +
+      "Your CK reference alone cannot unlock a booking.";
+    return;
+  }
 
-      message.textContent =
-        "Your reference format is valid. " +
-        "Please use your private management link " +
-        "to access your booking. " +
-        "If you have lost it, contact Karyn.";
-    }
-  </script>
+  message.textContent = "Loading your booking...";
 
+  const { data, error } = await weddingDB.rpc(
+    "get_my_wedding_booking",
+    { p_token: token }
+  );
+
+  if (error) {
+    console.error(error);
+    message.textContent =
+      "We couldn't load your booking. Please try again.";
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    message.textContent =
+      "No active booking was found for this private link.";
+    return;
+  }
+
+  if (reference &&
+      reference !== data[0].booking_reference) {
+    message.textContent =
+      "The CK reference does not match this booking.";
+    return;
+  }
+
+  const container = document.createElement("div");
+  container.style.marginTop = "20px";
+
+  const heading = document.createElement("h3");
+  heading.textContent =
+    "Booking " + data[0].booking_reference;
+  container.appendChild(heading);
+
+  data.forEach(booking => {
+    const item = document.createElement("p");
+    item.textContent =
+      booking.guest_name + " | " +
+      booking.room_name + " | " +
+      booking.stay_date + " | " +
+      booking.guest_count + " guest(s)";
+    container.appendChild(item);
+  });
+
+  message.replaceChildren(container);
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  const token = new URLSearchParams(
+    window.location.search
+  ).get("token");
+
+  if (token) {
+    showInstructions();
+  }
+});
+</script>
 </body>
 </html>
