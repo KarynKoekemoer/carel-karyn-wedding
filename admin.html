@@ -252,7 +252,20 @@ if (booking.status === "confirmed") {
       message.textContent = "Signed out.";
     });
 
-    showDashboard();
+    async function restoreAdminSession() {
+  const { data, error } = await db.auth.getSession();
+
+  if (error) {
+    console.error("Session error:", error);
+    return;
+  }
+
+  if (data.session) {
+    await showDashboard();
+  }
+}
+
+restoreAdminSession();
   </script>
 </body>
 </html>
