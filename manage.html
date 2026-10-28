@@ -217,7 +217,62 @@ async function showInstructions() {
       booking.guest_count + " guest(s)";
     container.appendChild(item);
   });
+const choicesHeading = document.createElement("h3");
+choicesHeading.textContent = "Available accommodation";
+container.appendChild(choicesHeading);
 
+for (const booking of data) {
+  const section = document.createElement("div");
+  section.style.marginTop = "20px";
+
+  const dateHeading = document.createElement("h4");
+  dateHeading.textContent =
+    "Accommodation for " + booking.stay_date;
+  section.appendChild(dateHeading);
+
+  const { data: rooms, error: roomsError } =
+    await weddingDB.rpc("get_wedding_room_choices", {
+      p_token: token,
+      p_stay_date: booking.stay_date
+    });
+
+  if (roomsError) {
+    const errorText = document.createElement("p");
+    errorText.textContent =
+      "Could not load room availability.";
+    section.appendChild(errorText);
+  } else {
+    const list = document.createElement("ul");
+
+    rooms.forEach(room => {
+      const item = document.createElement("li");
+
+      const price = Number(room.price_per_night)
+        .toLocaleString("en-ZA", {
+          style: "currency",
+          currency: "ZAR"
+        });
+
+      const priceLabel =
+        room.pricing_type === "per_person"
+          ? price + " per person per night"
+          : price + " per unit per night";
+
+      item.textContent =
+        room.room_name + " — " +
+        room.room_location + " — " +
+        "Sleeps " + room.capacity + " — " +
+        priceLabel + " — " +
+        (room.is_available ? "Available" : "Booked");
+
+      list.appendChild(item);
+    });
+
+    section.appendChild(list);
+  }
+
+  container.appendChild(section);
+}
   message.replaceChildren(container);
 }
 
