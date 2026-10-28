@@ -490,6 +490,107 @@ if (
         money(swap.my_price_difference);
 
       item.appendChild(details);
+      if (
+        swap.request_direction === "incoming" &&
+        swap.request_status === "pending"
+      ) {
+        const acceptButton = document.createElement("button");
+        acceptButton.type = "button";
+        acceptButton.textContent = "Accept Swap";
+
+        const declineButton = document.createElement("button");
+        declineButton.type = "button";
+        declineButton.textContent = "Decline Swap";
+
+        acceptButton.addEventListener("click", async () => {
+          const confirmed = window.confirm(
+            "ACCEPT ROOM SWAP?\n\n" +
+            "Date: " + swap.stay_date +
+            "\nCurrent room: " + swap.target_room_name +
+            "\nNew room: " + swap.requester_room_name +
+            "\n\nYour price difference: " +
+            money(swap.my_price_difference) +
+            "\n\nThis amount is for the selected night." +
+            "\nNo payment or refund happens automatically." +
+            "\n\nDo you agree to this price difference and swap?"
+          );
+
+          if (!confirmed) return;
+
+          acceptButton.disabled = true;
+          declineButton.disabled = true;
+          acceptButton.textContent = "Processing swap...";
+
+          try {
+            const { error } = await weddingDB.rpc(
+              "respond_wedding_room_swap",
+              {
+                p_token: token,
+                p_request_id: swap.request_id,
+                p_accept: true,
+                p_confirmed_difference: swap.my_price_difference
+              }
+            );
+
+            if (error) throw error;
+
+            alert("Room swap completed successfully!");
+            await showInstructions();
+
+          } catch (error) {
+            console.error(error);
+            alert(
+              "Could not accept the swap. " +
+              (error.message || "Please try again.")
+            );
+          } finally {
+            acceptButton.disabled = false;
+            declineButton.disabled = false;
+            acceptButton.textContent = "Accept Swap";
+          }
+        });
+
+        declineButton.addEventListener("click", async () => {
+          const confirmed = window.confirm(
+            "Decline this room swap request?"
+          );
+
+          if (!confirmed) return;
+
+          acceptButton.disabled = true;
+          declineButton.disabled = true;
+
+          try {
+            const { error } = await weddingDB.rpc(
+              "respond_wedding_room_swap",
+              {
+                p_token: token,
+                p_request_id: swap.request_id,
+                p_accept: false,
+                p_confirmed_difference: null
+              }
+            );
+
+            if (error) throw error;
+
+            alert("Swap request declined.");
+            await showInstructions();
+
+          } catch (error) {
+            console.error(error);
+            alert(
+              "Could not decline the request. " +
+              (error.message || "Please try again.")
+            );
+          } finally {
+            acceptButton.disabled = false;
+            declineButton.disabled = false;
+          }
+        });
+
+        item.appendChild(acceptButton);
+        item.appendChild(declineButton);
+      }
       container.appendChild(item);
     });
   }
