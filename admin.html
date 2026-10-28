@@ -190,8 +190,8 @@ if (booking.status === "confirmed") {
 
   cancelButton.addEventListener("click", async () => {
     const confirmed = window.confirm(
-      Are you sure you want to cancel the booking for ${booking.guest_name} on ${booking.stay_date}?
-    );
+  Are you sure you want to cancel the booking for ${booking.guest_name} on ${booking.stay_date}?
+);
 
     if (!confirmed) return;
 
