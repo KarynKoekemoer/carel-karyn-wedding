@@ -538,7 +538,8 @@ if (unavailableDates.length > 0) {
 
     if (error) throw error;
 
-    message.textContent = "Your accommodation booking has been confirmed!";
+    message.textContent = "Your accommodation booking has been confirmed! Your booking reference is: " + data + ". Please save this reference to manage your booking later.";
+    
     document.getElementById("booking-form").reset();
     calculateBookingTotal();
 
