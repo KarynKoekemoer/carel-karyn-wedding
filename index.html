@@ -527,7 +527,7 @@ if (unavailableDates.length > 0) {
   message.textContent = "Processing your booking...";
 
   try {
-    const { data, error } = await weddingDB.rpc("book_wedding_stay", {
+    const { data, error } = await weddingDB.rpc("book_wedding_stay_with_link", {
       p_room_id: roomId,
       p_dates: dates,
       p_guest_name: guestName,
@@ -538,7 +538,39 @@ if (unavailableDates.length > 0) {
 
     if (error) throw error;
 
-    message.textContent = "Your accommodation booking has been confirmed! Your booking reference is: " + data + ". Please save this reference to manage your booking later.";
+    message.replaceChildren();
+
+const confirmation = document.createElement("p");
+confirmation.textContent =
+  "Your accommodation booking is confirmed! " +
+  "Booking reference: " + data.reference;
+message.appendChild(confirmation);
+
+const instruction = document.createElement("p");
+instruction.textContent =
+  "IMPORTANT: Save your private management link. " +
+  "You will need it to view or change your booking.";
+message.appendChild(instruction);
+
+const link = document.createElement("a");
+link.href = data.manage_url;
+link.textContent = "Manage My Booking";
+link.target = "_blank";
+link.rel = "noopener noreferrer";
+message.appendChild(link);
+
+const copyButton = document.createElement("button");
+copyButton.type = "button";
+copyButton.textContent = "Copy My Private Link";
+copyButton.addEventListener("click", async () => {
+  try {
+    await navigator.clipboard.writeText(data.manage_url);
+    copyButton.textContent = "Link Copied!";
+  } catch {
+    window.prompt("Copy your private link:", data.manage_url);
+  }
+});
+message.appendChild(copyButton);
     
     document.getElementById("booking-form").reset();
     calculateBookingTotal();
