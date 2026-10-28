@@ -264,7 +264,88 @@ for (const booking of data) {
         "Sleeps " + room.capacity + " — " +
         priceLabel + " — " +
         (room.is_available ? "Available" : "Booked");
+if (
+  room.is_available &&
+  room.capacity >= booking.guest_count &&
+  room.room_name !== booking.room_name
+) {
+  const changeButton = document.createElement("button");
+  changeButton.type = "button";
+  changeButton.textContent = "Choose this room";
+  changeButton.style.marginLeft = "10px";
+  changeButton.style.padding = "8px 12px";
+  changeButton.style.cursor = "pointer";
 
+  changeButton.addEventListener("click", async () => {
+    changeButton.disabled = true;
+    changeButton.textContent = "Checking price...";
+
+    try {
+      const { data: preview, error: previewError } =
+        await weddingDB.rpc("preview_wedding_room_change", {
+          p_token: token,
+          p_stay_date: booking.stay_date,
+          p_new_room_id: room.room_id
+        });
+
+      if (previewError) throw previewError;
+      if (!preview || preview.length === 0) {
+        throw new Error("Price preview unavailable.");
+      }
+
+      const quote = preview[0];
+      const money = value =>
+        Number(value).toLocaleString("en-ZA", {
+          style: "currency",
+          currency: "ZAR"
+        });
+
+      const difference = Number(quote.price_difference);
+
+      const confirmed = window.confirm(
+        "Change accommodation for " + booking.stay_date +
+        "\n\nCurrent room: " + quote.current_room +
+        "\nNew room: " + quote.new_room +
+        "\n\nCurrent price: " + money(quote.current_price) +
+        "\nNew price: " + money(quote.new_price) +
+        "\nPrice difference: " + money(difference) +
+        "\n\nThis does not process any payment or refund." +
+        "\n\nConfirm this room change?"
+      );
+
+      if (!confirmed) return;
+
+      changeButton.textContent = "Changing room...";
+
+      const { error: changeError } = await weddingDB.rpc(
+        "change_my_wedding_room",
+        {
+          p_token: token,
+          p_stay_date: booking.stay_date,
+          p_new_room_id: room.room_id,
+          p_confirmed_difference: quote.price_difference
+        }
+      );
+
+      if (changeError) throw changeError;
+
+      alert("Room changed successfully!");
+      await showInstructions();
+    } catch (error) {
+      console.error(error);
+      alert(
+        "The room could not be changed. " +
+        (error.message || "Please try again.")
+      );
+    } finally {
+      changeButton.disabled = false;
+      changeButton.textContent = "Choose this room";
+    }
+  });
+
+  item.appendChild(document.createTextNode(" "));
+  item.appendChild(changeButton);
+}
       list.appendChild(item);
     });
 
