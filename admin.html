@@ -97,6 +97,7 @@
               <th>Email</th>
               <th>Phone</th>
               <th>Status</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody id="bookings"></tbody>
@@ -180,7 +181,42 @@
           cell.textContent = value ?? "";
           row.appendChild(cell);
         }
+if (booking.status === "confirmed") {
+  const actionCell = document.createElement("td");
+  const cancelButton = document.createElement("button");
 
+  cancelButton.type = "button";
+  cancelButton.textContent = "Cancel Booking";
+
+  cancelButton.addEventListener("click", async () => {
+    const confirmed = window.confirm(
+      Are you sure you want to cancel the booking for ${booking.guest_name} on ${booking.stay_date}?
+    );
+
+    if (!confirmed) return;
+
+    cancelButton.disabled = true;
+    cancelButton.textContent = "Cancelling...";
+
+    const { error } = await db.rpc("cancel_wedding_booking", {
+      p_booking_id: booking.id
+    });
+
+    if (error) {
+      alert("Could not cancel booking: " + error.message);
+      cancelButton.disabled = false;
+      cancelButton.textContent = "Cancel Booking";
+      return;
+    }
+
+    alert("Booking cancelled successfully.");
+    await loadBookings();
+  });
+
+  actionCell.appendChild(cancelButton);
+  row.appendChild(actionCell);
+}
+      
         bookings.appendChild(row);
       }
     }
