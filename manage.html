@@ -346,6 +346,88 @@ if (
   item.appendChild(document.createTextNode(" "));
   item.appendChild(changeButton);
 }
+      if (
+  !room.is_available &&
+  room.capacity >= booking.guest_count &&
+  room.room_name !== booking.room_name
+) {
+  const swapButton = document.createElement("button");
+  swapButton.type = "button";
+  swapButton.textContent = "Request Swap";
+
+  swapButton.addEventListener("click", async () => {
+    swapButton.disabled = true;
+    swapButton.textContent = "Checking prices...";
+
+    try {
+      const { data: preview, error: previewError } =
+        await weddingDB.rpc("preview_wedding_swap_prices", {
+          p_token: token,
+          p_stay_date: booking.stay_date,
+          p_target_room_id: room.room_id
+        });
+
+      if (previewError) throw previewError;
+      if (!preview || preview.length === 0) {
+        throw new Error("Price preview unavailable.");
+      }
+
+      const quote = preview[0];
+
+      const money = value =>
+        Number(value).toLocaleString("en-ZA", {
+          style: "currency",
+          currency: "ZAR"
+        });
+
+      const confirmed = window.confirm(
+        "REQUEST ROOM SWAP\n\n" +
+        "Date: " + booking.stay_date +
+        "\nYour current room: " + booking.room_name +
+        "\nRequested room: " + room.room_name +
+        "\n\nYour current price: " +
+        money(quote.requester_current_price) +
+        "\nYour new price: " +
+        money(quote.requester_new_price) +
+        "\nYour price difference: " +
+        money(quote.requester_difference) +
+        "\n\nThe other family must also approve." +
+        "\nNo payment or refund is processed automatically." +
+        "\n\nSend this swap request?"
+      );
+
+      if (!confirmed) return;
+
+      swapButton.textContent = "Sending request...";
+
+      const { error: requestError } =
+        await weddingDB.rpc("request_wedding_room_swap", {
+          p_token: token,
+          p_stay_date: booking.stay_date,
+          p_target_room_id: room.room_id,
+          p_confirmed_difference: quote.requester_difference
+        });
+
+      if (requestError) throw requestError;
+
+      alert("Swap request sent successfully!");
+      await showInstructions();
+
+    } catch (error) {
+      console.error(error);
+      alert(
+        "Could not send swap request. " +
+        (error.message || "Please try again.")
+      );
+    } finally {
+      swapButton.disabled = false;
+      swapButton.textContent = "Request Swap";
+    }
+  });
+
+  item.appendChild(document.createTextNode(" "));
+  item.appendChild(swapButton);
+}
       list.appendChild(item);
     });
 
