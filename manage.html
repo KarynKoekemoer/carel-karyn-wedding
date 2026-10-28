@@ -142,6 +142,17 @@
       Back to Accommodation
     </a>
   </footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+  const SUPABASE_URL = "https://rqyynavczkexkztogcix.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_Eew9XHMBSp_10Gkvuvy1DQ_1GQXOfX5";
+
+  const weddingDB = supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+  );
+</script>
 
   <script>
     function showInstructions() {
