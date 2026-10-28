@@ -354,6 +354,63 @@ if (
 
   container.appendChild(section);
 }
+  // Show room swap requests for this private booking.
+  const swapsHeading = document.createElement("h3");
+  swapsHeading.textContent = "Room Swap Requests";
+  container.appendChild(swapsHeading);
+
+  const { data: swaps, error: swapsError } =
+    await weddingDB.rpc("get_my_wedding_swap_requests", {
+      p_token: token
+    });
+
+  if (swapsError) {
+    console.error(swapsError);
+
+    const errorText = document.createElement("p");
+    errorText.textContent =
+      "Could not load room swap requests.";
+    container.appendChild(errorText);
+
+  } else if (!swaps || swaps.length === 0) {
+    const emptyText = document.createElement("p");
+    emptyText.textContent =
+      "You have no room swap requests yet.";
+    container.appendChild(emptyText);
+
+  } else {
+    swaps.forEach(swap => {
+      const item = document.createElement("div");
+      item.style.padding = "12px";
+      item.style.marginBottom = "12px";
+      item.style.border = "1px solid #ddd";
+      item.style.borderRadius = "8px";
+
+      const direction =
+        swap.request_direction === "incoming"
+          ? "Incoming request"
+          : "Your request";
+
+      const money = value =>
+        Number(value).toLocaleString("en-ZA", {
+          style: "currency",
+          currency: "ZAR"
+        });
+
+      const details = document.createElement("p");
+      details.textContent =
+        direction + " | " +
+        swap.stay_date + " | " +
+        swap.requester_room_name + " ↔️ " +
+        swap.target_room_name + " | " +
+        "Status: " + swap.request_status +
+        " | Your price difference: " +
+        money(swap.my_price_difference);
+
+      item.appendChild(details);
+      container.appendChild(item);
+    });
+  }
   message.replaceChildren(container);
 }
 
